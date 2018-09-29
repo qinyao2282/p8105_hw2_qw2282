@@ -14,7 +14,26 @@ library(tidyverse)
 #Import the data
 nyc_transit_data = read.csv(file = "./data/NYC_Transit_Subway_Entrance_And_Exit_Data.csv") %>%
   janitor::clean_names() %>% 
-  select(line, station_name, station_latitude, station_longitude, starts_with("route"), entry, vending, entrance_type, starts_with("ada"))
+  select(line, station_name, station_latitude, station_longitude, starts_with("route"), entry, vending, entrance_type, starts_with("ada")) %>% 
+  mutate(entry = recode(entry, `YES` = TRUE, `NO` = FALSE)) 
+
+
+distinct_station = distinct(nyc_transit_data, station_name,route1, .keep_all = TRUE)
+dim(distinct_station)  #451 distinct stations.
+
+ada_com_distinction_station = filter(distinct_station, ada == TRUE)
+dim(ada_com_distinction_station) #76 are ada complimented. 
+
+without_vending = filter(distinct_station, vending == "NO")
+without_vending_allow_entry = 
+  filter(distinct_station, vending == "NO", entry == TRUE)
+proportion = nrow(without_vending_allow_entry) / nrow(without_vending) #55.6%
+
+transitdata_tidy = gather(nyc_transit_data, key = route_number, value = route_name, route1 : route11)
+
+station_A_route = distinct(transitdata_tidy, station_name, route_name = "A", .keep_all = TRUE)
+
+  
 
 
 
