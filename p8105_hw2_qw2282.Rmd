@@ -29,13 +29,25 @@ without_vending_allow_entry =
   filter(distinct_station, vending == "NO", entry == TRUE)
 proportion = nrow(without_vending_allow_entry) / nrow(without_vending) #55.6%
 
-transitdata_tidy = gather(nyc_transit_data, key = route_number, value = route_name, route1 : route11)
+transitdata_tidy = gather(nyc_transit_data, key = route_number, value = route_name, route1:route11)
 
-station_A_route = distinct(transitdata_tidy, station_name, route_name = "A", .keep_all = TRUE)
-
-  
-
-
+station_A_route = 
+  filter(transitdata_tidy, route_name == "A") %>% 
+  distinct(station_name, .keep_all = TRUE)  %>% #56 distinct stations serve A
+  filter(ada == TRUE) #15 of them have ada.
 
 ```
+
+
+##Problem 2
+```{r problem 2}
+mr_wheel_data = readxl::read_excel("./data/HealthyHarborWaterWheelTotals2017-9-26.xlsx", range = "A2:N258")
+```
+
+
+
+
+
+
+
 
