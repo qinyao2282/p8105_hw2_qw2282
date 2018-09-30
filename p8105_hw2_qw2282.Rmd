@@ -8,6 +8,7 @@ output: github_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
+library(p8105.datasets)
 ```
 
 ```{r}
@@ -68,6 +69,31 @@ precipitation_tidy = bind_rows(precipitation_2016, precipitation_2017) %>%
 ```
 
 
+##Problem 3
+```{r}
+library(p8105.datasets)
+data(brfss_smart2010)
+
+
+brfss_smart2010 = janitor::clean_names(brfss_smart2010) %>% 
+  filter(topic == "Overall Health") %>% 
+  select(-c(topic, class, question, sample_size, confidence_limit_low:geo_location)) %>% 
+  spread( key = response, value = data_value)
+
+#Unique locations
+distinct_location = distinct(brfss_smart2010, locationdesc, .keep_all = TRUE) #total of 404 different locations
+
+distinct_state = distinct(brfss_smart2010, locationabbr, .keep_all = TRUE) #51 states. 
+
+tail(names(sort(table(brfss_smart2010$locationabbr))), 1) #NJ is the most frequently appeared states.
+
+ggplot(filter(brfss_smart2010, year == 2002), aes(x = Excellent)) + geom_histogram()
+
+
+ggplot(filter(brfss_smart2010, locationdesc == "NY - New York County" | locationdesc == "NY - Queens County"), aes(x = year, y = Excellent)) + geom_point(aes(color = locationdesc), alpha = .5)
+  
+
+```
 
 
 
