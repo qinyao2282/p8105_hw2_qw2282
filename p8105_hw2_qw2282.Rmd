@@ -41,7 +41,30 @@ station_A_route =
 
 ##Problem 2
 ```{r problem 2}
-mr_wheel_data = readxl::read_excel("./data/HealthyHarborWaterWheelTotals2017-9-26.xlsx", range = "A2:N258")
+
+trash_wheel_data = readxl::read_excel("./data/HealthyHarborWaterWheelTotals2017-9-26.xlsx", sheet = 1, range = "A2:N258") %>% 
+  janitor::clean_names() 
+
+trash_wheel_data = filter(trash_wheel_data, !is.na(dumpster)) %>% 
+  mutate(sports_balls = as.integer(round(sports_balls, 0)))
+
+precipitation_2016 = readxl::read_excel("./data/HealthyHarborWaterWheelTotals2017-9-26.xlsx", sheet = 4, range = "A2:B15") %>% 
+  janitor::clean_names() %>% 
+  filter(!is.na(month)) %>% 
+  mutate(year = 2016)
+  
+precipitation_2017 = readxl::read_excel("./data/HealthyHarborWaterWheelTotals2017-9-26.xlsx", sheet = 3, range = "A2:B15") %>% 
+  janitor::clean_names() %>% 
+  filter(!is.na(month)) %>% 
+  mutate(year = 2017)
+
+precipitation_tidy = bind_rows(precipitation_2016, precipitation_2017) %>%
+  janitor::clean_names() %>% 
+  mutate(month = month.name[month])
+  
+
+
+
 ```
 
 
