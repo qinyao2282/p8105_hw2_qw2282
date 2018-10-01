@@ -16,9 +16,14 @@ library(p8105.datasets)
 nyc_transit_data = read.csv(file = "./data/NYC_Transit_Subway_Entrance_And_Exit_Data.csv") %>%
   janitor::clean_names() %>% 
   select(line, station_name, station_latitude, station_longitude, starts_with("route"), entry, vending, entrance_type, starts_with("ada")) %>% 
-  mutate(entry = recode(entry, `YES` = TRUE, `NO` = FALSE)) 
+  mutate(entry = recode(entry, "YES" = TRUE, "NO" = FALSE))
+  
+```
+
+This data set contains `r colnames(nyc_transit_data)`. These data are stored in a dataframe with  `r nrow(nyc_transit_data)` rows and `r ncol(nyc_transit_data)` columns. Up until now, I have cleaned up the variable names right after I imported the data from the data file. And I select the important columns and disregard the rest. and I have recode the content under the entry variable by changing the "Yes" and "No" into logical values TRUE and False. These data are not tidy yet because the there still a lot of unnecessary variables, such as the eleven different routes that can be combined into one variable. 
 
 
+```{r}
 distinct_station = distinct(nyc_transit_data, station_name,route1, .keep_all = TRUE)
 dim(distinct_station)  #451 distinct stations.
 
@@ -29,7 +34,12 @@ without_vending = filter(distinct_station, vending == "NO")
 without_vending_allow_entry = 
   filter(distinct_station, vending == "NO", entry == TRUE)
 proportion = nrow(without_vending_allow_entry) / nrow(without_vending) #55.6%
+```
 
+There are a total of `r nrow(distinct_station)` different stations, some of them are on the same street but serving different lines. `r nrow(ada_com_distinction_station)` are ADA compliant. `r proportion*100`% of station entrances/ exits without vending that allow entrance. 
+
+
+```{r}
 transitdata_tidy = gather(nyc_transit_data, key = route_number, value = route_name, route1:route11)
 
 station_A_route = 
@@ -39,10 +49,15 @@ station_A_route =
 
 ```
 
+There are a total of 56 distinct stations serve the A train. Of these stations, `r nrow(station_A_route)` are ADA complimant. 
+
+
+
 
 ##Problem 2
 ```{r problem 2}
 
+#Import the data for Mr. trash wheeel. 
 trash_wheel_data = readxl::read_excel("./data/HealthyHarborWaterWheelTotals2017-9-26.xlsx", sheet = 1, range = "A2:N258") %>% 
   janitor::clean_names() 
 
@@ -51,22 +66,23 @@ trash_wheel_data = filter(trash_wheel_data, !is.na(dumpster)) %>%
 
 precipitation_2016 = readxl::read_excel("./data/HealthyHarborWaterWheelTotals2017-9-26.xlsx", sheet = 4, range = "A2:B15") %>% 
   janitor::clean_names() %>% 
-  filter(!is.na(month)) %>% 
+  filter(!is.na(total)) %>% 
   mutate(year = 2016)
   
 precipitation_2017 = readxl::read_excel("./data/HealthyHarborWaterWheelTotals2017-9-26.xlsx", sheet = 3, range = "A2:B15") %>% 
   janitor::clean_names() %>% 
-  filter(!is.na(month)) %>% 
+  filter(!is.na(total)) %>% 
   mutate(year = 2017)
 
 precipitation_tidy = bind_rows(precipitation_2016, precipitation_2017) %>%
   janitor::clean_names() %>% 
   mutate(month = month.name[month])
-  
-
-
 
 ```
+
+Mr. Trash Wheel data is stored in a dataframe with `r nrow(trash_wheel_data)` rows and `r ncol(trash_wheel_data)` columns. The dataset contains the following variables: `r colnames(trash_wheel_data)`. The rows indicates there are a total of `r nrow(trash_wheel_data)` observations from `r head(trash_wheel_data$year, 1)`. Some key variables are the types of trash, such as the sports balls and cigaratte butts can all be catagorized into types of trash that Mr. Trash Wheel collected. In addition to the types of trash, the amount of trash can also be a key value because weight_tons and volume_cubic_yards can be catagrized.
+
+The precipitations for 2016 and 2017 are stored in two different dataframe.The dataframe of 2016 contains `r nrow(precipitation_2016)` rows and `r ncol(precipitation_2016)` columns. The dataframe of 2016 contains `r nrow(precipitation_2017)` rows and `r ncol(precipitation_2017)` columns. They both containing the following variables: `r colnames(precipitation_2016)`. I omitted rows that do not have precipitation data. Two dataframes for precipitation are combined and a new precipitation_tidy dataframe is created. The total precipitation in 2017 is `r sum(filter(precipitation_tidy, year == 2017)$total)`. The median number of sports balls in the dumster in 2016 is `r median(filter(trash_wheel_data, year == 2016)$sports_balls)`. 
 
 
 ##Problem 3
@@ -91,11 +107,9 @@ ggplot(filter(brfss_smart2010, year == 2002), aes(x = Excellent)) + geom_histogr
 
 
 ggplot(filter(brfss_smart2010, locationdesc == "NY - New York County" | locationdesc == "NY - Queens County"), aes(x = year, y = Excellent)) + geom_point(aes(color = locationdesc), alpha = .5)
-  
-
 ```
 
-
+There are a total of `r nrow(distinct_location)` locations are included in the dataset. And there are `r nrow(distinct_state)` states. Since there are a total of 51 states in United States, all the states are represented. In 2002, the median of the "Excellent" response value are `r median(brfss_smart2010$Excellent, na.rm = TRUE)`.
 
 
 
