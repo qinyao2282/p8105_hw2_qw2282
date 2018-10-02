@@ -20,32 +20,36 @@ nyc_transit_data = read.csv(file = "./data/NYC_Transit_Subway_Entrance_And_Exit_
   
 ```
 
-This data set contains `r colnames(nyc_transit_data)`. These data are stored in a dataframe with  `r nrow(nyc_transit_data)` rows and `r ncol(nyc_transit_data)` columns. Up until now, I have cleaned up the variable names right after I imported the data from the data file. And I select the important columns and disregard the rest. and I have recode the content under the entry variable by changing the "Yes" and "No" into logical values TRUE and False. These data are not tidy yet because the there still a lot of unnecessary variables, such as the eleven different routes that can be combined into one variable. 
+This data set contains variables, which are  `r colnames(nyc_transit_data)`. These data are stored in a dataframe with  `r nrow(nyc_transit_data)` rows and `r ncol(nyc_transit_data)` columns. Up until now, I have cleaned up the variable names right after I imported the data from the data file. And I select the important columns and disregard the rest. and I have recode the content under the entry variable by changing the "Yes" and "No" into logical values TRUE and FALSE. These data are not tidy yet because the there still a lot of unnecessary variables, such as the eleven different routes that can be combined into one variable. 
 
 
 ```{r}
+#Find distinct stations. 
 distinct_station = distinct(nyc_transit_data, station_name, route1, line,  .keep_all = TRUE)
-dim(distinct_station)  #451 distinct stations.
+dim(distinct_station)  #466 distinct stations that have different station name, route and lines.
 
 ada_com_distinction_station = filter(distinct_station, ada == TRUE)
-dim(ada_com_distinction_station) #84 are ada complimented. 
+dim(ada_com_distinction_station) #84 are ada complimented among these different stations. 
 
+#Find the stations that do not have vending machine.
 without_vending = filter(distinct_station, vending == "NO")
 without_vending_allow_entry = 
   filter(distinct_station, vending == "NO", entry == TRUE)
+
+#Calculate proportion
 proportion = nrow(without_vending_allow_entry) / nrow(without_vending) #55.6%
 ```
 
-There are a total of `r nrow(distinct_station)` different stations, some of them are on the same street but serving different lines. `r nrow(ada_com_distinction_station)` are ADA compliant. `r proportion*100`% of station entrances/ exits without vending that allow entrance. 
-
+There are a total of `r nrow(distinct_station)` different stations, some of them are on the same street but serving different routes and lines. `r nrow(ada_com_distinction_station)` of these distinct stations are ADA compliant. `r proportion*100`% of station entrances/ exits without vending that allow entrance. 
 
 ```{r}
+#Combine the columns of routes the station serves.
 transitdata_tidy = gather(nyc_transit_data, key = route_number, value = route_name, route1:route11)
 
+#Calculate the station that serves A train. 
 station_A_route = 
   distinct(transitdata_tidy, station_name, route_name, line, .keep_all = TRUE) %>% 
-  filter(route_name == "A") %>% 
- #60 distinct stations serve A
+  filter(route_name == "A") %>% #60 distinct stations serve A
   filter(ada == TRUE) #17 of them have ada.
 
 ```
@@ -58,23 +62,27 @@ There are a total of 60 distinct stations serve the A train. Of these stations, 
 ##Problem 2
 ```{r problem 2}
 
-#Import the data for Mr. trash wheeel. 
+#Import the data for Mr. trash wheeel and do the initial cleaning of the names. 
 trash_wheel_data = readxl::read_excel("./data/HealthyHarborWaterWheelTotals2017-9-26.xlsx", sheet = 1, range = "A2:N258") %>% 
   janitor::clean_names() 
 
+#Omit the lines without dumpster data, then round the number of sports balls. 
 trash_wheel_data = filter(trash_wheel_data, !is.na(dumpster)) %>% 
   mutate(sports_balls = as.integer(round(sports_balls, 0)))
 
+#Import the data for precpitation 2016.
 precipitation_2016 = readxl::read_excel("./data/HealthyHarborWaterWheelTotals2017-9-26.xlsx", sheet = 4, range = "A2:B15") %>% 
   janitor::clean_names() %>% 
-  filter(!is.na(total)) %>% 
-  mutate(year = 2016)
-  
+  filter(!is.na(total)) %>% #Omit the lines without precipitation data. 
+  mutate(year = 2016) #Add a variable of year. 
+ 
+#Import the data for precpitation 2017. 
 precipitation_2017 = readxl::read_excel("./data/HealthyHarborWaterWheelTotals2017-9-26.xlsx", sheet = 3, range = "A2:B15") %>% 
   janitor::clean_names() %>% 
-  filter(!is.na(total)) %>% 
-  mutate(year = 2017)
+  filter(!is.na(total)) %>% #Omit the lines without precipitation data. 
+  mutate(year = 2017) #Add a variable of year. 
 
+#Combine preciptation 2016 and 2017. 
 precipitation_tidy = bind_rows(precipitation_2016, precipitation_2017) %>%
   janitor::clean_names() %>% 
   mutate(month = month.name[month])
@@ -88,34 +96,32 @@ The precipitations for 2016 and 2017 are stored in two different dataframe.The d
 
 ##Problem 3
 ```{r}
-library(p8105.datasets)
+#Import the data. 
 data(brfss_smart2010)
 
-
+#Clean the variable names. 
 brfss_smart2010 = janitor::clean_names(brfss_smart2010) %>% 
-  filter(topic == "Overall Health") %>% 
+  filter(topic == "Overall Health") %>% #Focus on the overall health topic. 
   select(-c(topic, class, question, sample_size, confidence_limit_low:geo_location)) %>% 
-  spread( key = response, value = data_value) %>% 
-  janitor::clean_names() %>% 
-  mutate(proportion = (excellent + very_good) / (excellent + very_good + good + fair))
+  spread(key = response, value = data_value) %>% 
+  janitor::clean_names() %>%  #Clean the names again 
+  mutate(proportion = (excellent + very_good) / (excellent + very_good + good + fair)) #Calculate the proportions and add it as a variable. 
 
 
-
-
-#Unique locations
+#Calculaye unique locations
 distinct_location = distinct(brfss_smart2010, locationdesc, .keep_all = TRUE) #total of 404 different locations
 
 distinct_state = distinct(brfss_smart2010, locationabbr, .keep_all = TRUE) #51 states. 
 
 tail(names(sort(table(brfss_smart2010$locationabbr))), 1) #NJ is the most frequently appeared states.
 
-ggplot(filter(brfss_smart2010, year == 2002), aes(x = Excellent)) + geom_histogram()
+ggplot(filter(brfss_smart2010, year == 2002), aes(x = excellent)) + geom_histogram()
 
 
-ggplot(filter(brfss_smart2010, locationdesc == "NY - New York County" | locationdesc == "NY - Queens County"), aes(x = year, y = Excellent)) + geom_point(aes(color = locationdesc), alpha = .5)
+ggplot(filter(brfss_smart2010, locationdesc == "NY - New York County" | locationdesc == "NY - Queens County"), aes(x = year, y = excellent)) + geom_point(aes(color = locationdesc), alpha = .5)
 ```
 
-There are a total of `r nrow(distinct_location)` locations are included in the dataset. And there are `r nrow(distinct_state)` states. Since there are a total of 51 states in United States, all the states are represented. In 2002, the median of the "Excellent" response value are `r median(brfss_smart2010$Excellent, na.rm = TRUE)`.
+There are a total of `r nrow(distinct_location)` locations are included in the dataset. And there are `r nrow(distinct_state)` states. Since there are a total of 51 states in United States, all the states are represented. In 2002, the median of the "Excellent" response value are `r median(brfss_smart2010$excellent, na.rm = TRUE)`.
 
 
 
