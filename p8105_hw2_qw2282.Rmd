@@ -24,11 +24,11 @@ This data set contains `r colnames(nyc_transit_data)`. These data are stored in 
 
 
 ```{r}
-distinct_station = distinct(nyc_transit_data, station_name,route1, .keep_all = TRUE)
+distinct_station = distinct(nyc_transit_data, station_name, route1, line,  .keep_all = TRUE)
 dim(distinct_station)  #451 distinct stations.
 
 ada_com_distinction_station = filter(distinct_station, ada == TRUE)
-dim(ada_com_distinction_station) #76 are ada complimented. 
+dim(ada_com_distinction_station) #84 are ada complimented. 
 
 without_vending = filter(distinct_station, vending == "NO")
 without_vending_allow_entry = 
@@ -43,13 +43,14 @@ There are a total of `r nrow(distinct_station)` different stations, some of them
 transitdata_tidy = gather(nyc_transit_data, key = route_number, value = route_name, route1:route11)
 
 station_A_route = 
-  filter(transitdata_tidy, route_name == "A") %>% 
-  distinct(station_name, .keep_all = TRUE)  %>% #56 distinct stations serve A
-  filter(ada == TRUE) #15 of them have ada.
+  distinct(transitdata_tidy, station_name, route_name, line, .keep_all = TRUE) %>% 
+  filter(route_name == "A") %>% 
+ #60 distinct stations serve A
+  filter(ada == TRUE) #17 of them have ada.
 
 ```
 
-There are a total of 56 distinct stations serve the A train. Of these stations, `r nrow(station_A_route)` are ADA complimant. 
+There are a total of 60 distinct stations serve the A train. Of these stations, `r nrow(station_A_route)` are ADA complimant. 
 
 
 
@@ -94,7 +95,12 @@ data(brfss_smart2010)
 brfss_smart2010 = janitor::clean_names(brfss_smart2010) %>% 
   filter(topic == "Overall Health") %>% 
   select(-c(topic, class, question, sample_size, confidence_limit_low:geo_location)) %>% 
-  spread( key = response, value = data_value)
+  spread( key = response, value = data_value) %>% 
+  janitor::clean_names() %>% 
+  mutate(proportion = (excellent + very_good) / (excellent + very_good + good + fair))
+
+
+
 
 #Unique locations
 distinct_location = distinct(brfss_smart2010, locationdesc, .keep_all = TRUE) #total of 404 different locations
