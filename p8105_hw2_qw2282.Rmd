@@ -7,11 +7,13 @@ output: github_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+
+#Import data from the class dataset.
 library(tidyverse)
 library(p8105.datasets)
 ```
 
-```{r}
+```{r Problem1}
 #Import the data
 nyc_transit_data = read.csv(file = "./data/NYC_Transit_Subway_Entrance_And_Exit_Data.csv") %>%
   janitor::clean_names() %>% 
@@ -23,21 +25,21 @@ nyc_transit_data = read.csv(file = "./data/NYC_Transit_Subway_Entrance_And_Exit_
 This data set contains variables, which are  `r colnames(nyc_transit_data)`. These data are stored in a dataframe with  `r nrow(nyc_transit_data)` rows and `r ncol(nyc_transit_data)` columns. Up until now, I have cleaned up the variable names right after I imported the data from the data file. And I select the important columns and disregard the rest. and I have recode the content under the entry variable by changing the "Yes" and "No" into logical values TRUE and FALSE. These data are not tidy yet because the there still a lot of unnecessary variables, such as the eleven different routes that can be combined into one variable. 
 
 
-```{r}
+```{r problem 1}
 #Find distinct stations. 
-distinct_station = distinct(nyc_transit_data, station_name, route1, line,  .keep_all = TRUE)
-dim(distinct_station)  #466 distinct stations that have different station name, route and lines.
+distinct_station = distinct(nyc_transit_data, station_name, line,  .keep_all = TRUE)
+dim(distinct_station)  #465 distinct stations that have different station name, route and lines.
 
 ada_com_distinction_station = filter(distinct_station, ada == TRUE)
 dim(ada_com_distinction_station) #84 are ada complimented among these different stations. 
 
 #Find the stations that do not have vending machine.
-without_vending = filter(distinct_station, vending == "NO")
+without_vending = filter(nyc_transit_data, vending == "NO")
 without_vending_allow_entry = 
-  filter(distinct_station, vending == "NO", entry == TRUE)
+  filter(nyc_transit_data, vending == "NO", entry == TRUE)
 
 #Calculate proportion
-proportion = nrow(without_vending_allow_entry) / nrow(without_vending) #55.6%
+proportion = nrow(without_vending_allow_entry) / nrow(without_vending) #37.7%
 ```
 
 There are a total of `r nrow(distinct_station)` different stations, some of them are on the same street but serving different routes and lines. `r nrow(ada_com_distinction_station)` of these distinct stations are ADA compliant. `r proportion*100`% of station entrances/ exits without vending that allow entrance. 
@@ -48,7 +50,7 @@ transitdata_tidy = gather(nyc_transit_data, key = route_number, value = route_na
 
 #Calculate the station that serves A train. 
 station_A_route = 
-  distinct(transitdata_tidy, station_name, route_name, line, .keep_all = TRUE) %>% 
+  distinct(transitdata_tidy, station_name, line, .keep_all = TRUE) %>% 
   filter(route_name == "A") %>% #60 distinct stations serve A
   filter(ada == TRUE) #17 of them have ada.
 
@@ -95,7 +97,7 @@ The precipitations for 2016 and 2017 are stored in two different dataframe.The d
 
 
 ##Problem 3
-```{r}
+```{r problem 3}
 #Import the data. 
 data(brfss_smart2010)
 
@@ -105,7 +107,7 @@ brfss_smart2010 = janitor::clean_names(brfss_smart2010) %>%
   select(-c(topic, class, question, sample_size, confidence_limit_low:geo_location)) %>% 
   spread(key = response, value = data_value) %>% 
   janitor::clean_names() %>%  #Clean the names again 
-  mutate(proportion = (excellent + very_good) / (excellent + very_good + good + fair)) #Calculate the proportions and add it as a variable. 
+  mutate(proportion = (excellent + very_good) / (excellent + very_good + good + fair + poor)) #Calculate the proportions and add it as a variable. 
 
 
 #Calculaye unique locations
@@ -121,7 +123,7 @@ ggplot(filter(brfss_smart2010, year == 2002), aes(x = excellent)) + geom_histogr
 ggplot(filter(brfss_smart2010, locationdesc == "NY - New York County" | locationdesc == "NY - Queens County"), aes(x = year, y = excellent)) + geom_point(aes(color = locationdesc), alpha = .5)
 ```
 
-There are a total of `r nrow(distinct_location)` locations are included in the dataset. And there are `r nrow(distinct_state)` states. Since there are a total of 51 states in United States, all the states are represented. In 2002, the median of the "Excellent" response value are `r median(brfss_smart2010$excellent, na.rm = TRUE)`.
+There are a total of `r nrow(distinct_location)` locations are included in the dataset. And there are `r nrow(distinct_state)` states. Since there are a total of 51 states, including the district of columbia, in United States, all the states are represented in this dataset. In 2002, the median of the "Excellent" response value are `r median(filter(brfss_smart2010, year == 2002)$excellent, na.rm = TRUE)`.
 
 
 
