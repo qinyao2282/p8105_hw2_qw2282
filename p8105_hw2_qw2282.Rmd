@@ -22,7 +22,7 @@ nyc_transit_data = read.csv(file = "./data/NYC_Transit_Subway_Entrance_And_Exit_
   
 ```
 
-This data set contains variables, which are  `r colnames(nyc_transit_data)`. These data are stored in a dataframe with  `r nrow(nyc_transit_data)` rows and `r ncol(nyc_transit_data)` columns. Up until now, I have cleaned up the variable names right after I imported the data from the data file. And I select the important columns and disregard the rest. and I have recode the content under the entry variable by changing the "Yes" and "No" into logical values TRUE and FALSE. These data are not tidy yet because the there still a lot of unnecessary variables, such as the eleven different routes that can be combined into one variable. 
+This data set contains 20 variables, which are  `r colnames(nyc_transit_data)`. These data are stored in a dataframe with  `r nrow(nyc_transit_data)` rows and `r ncol(nyc_transit_data)` columns. Up until now, I have cleaned up the variable names right after I imported the data from the data file. And I select the important columns and disregard the rest. and I have recode the content under the entry variable by changing the "Yes" and "No" into logical values TRUE and FALSE. These data are not tidy yet because the there still a lot of unnecessary variables, such as the eleven different routes that can be combined into one variable. 
 
 
 ```{r problem 1}
@@ -91,9 +91,9 @@ precipitation_tidy = bind_rows(precipitation_2016, precipitation_2017) %>%
 
 ```
 
-Mr. Trash Wheel data is stored in a dataframe with `r nrow(trash_wheel_data)` rows and `r ncol(trash_wheel_data)` columns. The dataset contains the following variables: `r colnames(trash_wheel_data)`. The rows indicates there are a total of `r nrow(trash_wheel_data)` observations from `r head(trash_wheel_data$year, 1)`. Some key variables are the types of trash, such as the sports balls and cigaratte butts can all be catagorized into types of trash that Mr. Trash Wheel collected. In addition to the types of trash, the amount of trash can also be a key value because weight_tons and volume_cubic_yards can be catagrized.
+Mr. Trash Wheel data is stored in a dataframe with `r nrow(trash_wheel_data)` rows and `r ncol(trash_wheel_data)` columns. The dataset contains the following variables: `r colnames(trash_wheel_data)`. The rows indicates there are a total of `r nrow(trash_wheel_data)` observations from `r head(trash_wheel_data$year, 1)`. Some key variables are the dumpsters, volume-cubic_yards, weight_tons and year. This variables can be used to depict the dataset. And some other cariables, such as the glass bottles and plastic bottles are not key variables. 
 
-The precipitations for 2016 and 2017 are stored in two different dataframe.The dataframe of 2016 contains `r nrow(precipitation_2016)` rows and `r ncol(precipitation_2016)` columns. The dataframe of 2016 contains `r nrow(precipitation_2017)` rows and `r ncol(precipitation_2017)` columns. They both containing the following variables: `r colnames(precipitation_2016)`. I omitted rows that do not have precipitation data. Two dataframes for precipitation are combined and a new precipitation_tidy dataframe is created. The total precipitation in 2017 is `r sum(filter(precipitation_tidy, year == 2017)$total)`. The median number of sports balls in the dumster in 2016 is `r median(filter(trash_wheel_data, year == 2016)$sports_balls)`. 
+The precipitations for 2016 and 2017 are stored in two different dataframe.The dataframe of 2016 contains `r nrow(precipitation_2016)` rows and `r ncol(precipitation_2016)` columns. The dataframe of 2016 contains `r nrow(precipitation_2017)` rows and `r ncol(precipitation_2017)` columns. They both containing the following variables: `r colnames(precipitation_2016)`. I omitted rows that do not have precipitation data. Two dataframes for precipitation are combined and a new precipitation_tidy dataframe is created. The total precipitation in 2017 is `r sum(filter(precipitation_tidy, year == 2017, !is.na(month))$total)`. The median number of sports balls in the dumster in 2016 is `r median(filter(trash_wheel_data, year == 2016)$sports_balls)`. 
 
 
 ##Problem 3
@@ -123,8 +123,8 @@ ggplot(filter(brfss_smart2010, year == 2002), aes(x = excellent)) + geom_histogr
 ggplot(filter(brfss_smart2010, locationdesc == "NY - New York County" | locationdesc == "NY - Queens County"), aes(x = year, y = excellent)) + geom_point(aes(color = locationdesc), alpha = .5)
 ```
 
-There are a total of `r nrow(distinct_location)` locations are included in the dataset. And there are `r nrow(distinct_state)` states. Since there are a total of 51 states, including the district of columbia, in United States, all the states are represented in this dataset. In 2002, the median of the "Excellent" response value are `r median(filter(brfss_smart2010, year == 2002)$excellent, na.rm = TRUE)`.
+There are a total of `r nrow(distinct_location)` locations are included in the dataset. And there are `r nrow(distinct_state)` states. Since there are a total of 51 states, including the district of columbia, in United States, all the states are represented in this dataset. The most frequently appeared state is NJ.  In 2002, the median of the "Excellent" response value are `r median(filter(brfss_smart2010, year == 2002)$excellent, na.rm = TRUE)`.
 
-
+The two plots, first one is a histogram and second one is a scatter plot. From the histogram, we can see that there are some extreme values for excellent. And most frequent excellent value is around 20 to 30. From the scatterplot, we can obviously see the difference btween the New York County and Queen County. The New York County has higher excellent value throughout the years.  
 
 
