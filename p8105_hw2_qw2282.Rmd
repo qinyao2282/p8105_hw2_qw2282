@@ -65,7 +65,7 @@ There are a total of 60 distinct stations serve the A train. Of these stations, 
 ```{r problem 2}
 
 #Import the data for Mr. trash wheeel and do the initial cleaning of the names. 
-trash_wheel_data = readxl::read_excel("./data/HealthyHarborWaterWheelTotals2017-9-26.xlsx", sheet = 1, range = "A2:N258") %>% 
+trash_wheel_data = readxl::read_excel("./data/HealthyHarborWaterWheelTotals2018-7-28.xlsx", sheet = 1, range = "A2:N338") %>% 
   janitor::clean_names() 
 
 #Omit the lines without dumpster data, then round the number of sports balls. 
@@ -73,13 +73,13 @@ trash_wheel_data = filter(trash_wheel_data, !is.na(dumpster)) %>%
   mutate(sports_balls = as.integer(round(sports_balls, 0)))
 
 #Import the data for precpitation 2016.
-precipitation_2016 = readxl::read_excel("./data/HealthyHarborWaterWheelTotals2017-9-26.xlsx", sheet = 4, range = "A2:B15") %>% 
+precipitation_2016 = readxl::read_excel("./data/HealthyHarborWaterWheelTotals2018-7-28.xlsx", sheet = 5, range = "A2:B15") %>% 
   janitor::clean_names() %>% 
   filter(!is.na(total)) %>% #Omit the lines without precipitation data. 
   mutate(year = 2016) #Add a variable of year. 
  
 #Import the data for precpitation 2017. 
-precipitation_2017 = readxl::read_excel("./data/HealthyHarborWaterWheelTotals2017-9-26.xlsx", sheet = 3, range = "A2:B15") %>% 
+precipitation_2017 = readxl::read_excel("./data/HealthyHarborWaterWheelTotals2018-7-28.xlsx", sheet = 4, range = "A2:B15") %>% 
   janitor::clean_names() %>% 
   filter(!is.na(total)) %>% #Omit the lines without precipitation data. 
   mutate(year = 2017) #Add a variable of year. 
