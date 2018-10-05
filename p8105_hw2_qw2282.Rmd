@@ -8,6 +8,8 @@ output: github_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 
+devtools::install_github("p8105/p8105.datasets")
+
 #Import data from the class dataset.
 library(tidyverse)
 library(p8105.datasets)
