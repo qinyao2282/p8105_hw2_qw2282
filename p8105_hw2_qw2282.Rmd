@@ -27,19 +27,15 @@ This data set contains 20 variables, which are  `r colnames(nyc_transit_data)`. 
 
 ```{r problem 1}
 #Find distinct stations. 
-distinct_station = distinct(nyc_transit_data, station_name, line,  .keep_all = TRUE)
+distinct_station = distinct(nyc_transit_data, station_name, line, .keep_all = TRUE)
 dim(distinct_station)  #465 distinct stations that have different station name, route and lines.
 
 ada_com_distinction_station = filter(distinct_station, ada == TRUE)
 dim(ada_com_distinction_station) #84 are ada complimented among these different stations. 
 
-#Find the stations that do not have vending machine.
-without_vending = filter(nyc_transit_data, vending == "NO")
-without_vending_allow_entry = 
-  filter(nyc_transit_data, vending == "NO", entry == TRUE)
+#Calculate proportion of the stations that do not have vending machine.
+proportion = nrow(filter(nyc_transit_data, vending == "NO", entry == TRUE)) / nrow(filter(nyc_transit_data, vending == "NO")) #37.7%
 
-#Calculate proportion
-proportion = nrow(without_vending_allow_entry) / nrow(without_vending) #37.7%
 ```
 
 There are a total of `r nrow(distinct_station)` different stations, some of them are on the same street but serving different routes and lines. `r nrow(ada_com_distinction_station)` of these distinct stations are ADA compliant. `r proportion*100`% of station entrances/ exits without vending that allow entrance. 
@@ -66,11 +62,9 @@ There are a total of 60 distinct stations serve the A train. Of these stations, 
 
 #Import the data for Mr. trash wheeel and do the initial cleaning of the names. 
 trash_wheel_data = readxl::read_excel("./data/HealthyHarborWaterWheelTotals2018-7-28.xlsx", sheet = 1, range = "A2:N338") %>% 
-  janitor::clean_names() 
-
-#Omit the lines without dumpster data, then round the number of sports balls. 
-trash_wheel_data = filter(trash_wheel_data, !is.na(dumpster)) %>% 
-  mutate(sports_balls = as.integer(round(sports_balls, 0)))
+  janitor::clean_names() %>% 
+  filter(!is.na(dumpster)) %>%  #Removes the lines that do not have a dumster
+  mutate(sports_balls = as.integer(round(sports_balls, 0))) #Round sports balls
 
 #Import the data for precpitation 2016.
 precipitation_2016 = readxl::read_excel("./data/HealthyHarborWaterWheelTotals2018-7-28.xlsx", sheet = 5, range = "A2:B15") %>% 
@@ -91,9 +85,9 @@ precipitation_tidy = bind_rows(precipitation_2016, precipitation_2017) %>%
 
 ```
 
-Mr. Trash Wheel data is stored in a dataframe with `r nrow(trash_wheel_data)` rows and `r ncol(trash_wheel_data)` columns. The dataset contains the following variables: `r colnames(trash_wheel_data)`. The rows indicates there are a total of `r nrow(trash_wheel_data)` observations from `r head(trash_wheel_data$year, 1)`. Some key variables are the dumpsters, volume-cubic_yards, weight_tons and year. This variables can be used to depict the dataset. And some other cariables, such as the glass bottles and plastic bottles are not key variables. 
+Mr. Trash Wheel data is stored in a dataframe with `r nrow(trash_wheel_data)` rows and `r ncol(trash_wheel_data)` columns. The dataset contains the following variables: `r colnames(trash_wheel_data)`. The rows indicates there are a total of `r nrow(trash_wheel_data)` observations from `r head(trash_wheel_data$year, 1)`. Some key variables are the dumpsters, volume-cubic_yards, weight_tons and year. This variables can be used to depict the dataset. And some other cariables, such as the glass bottles and plastic bottles are not key variables. This original data set had been cleaned up by changing the names to a better format and removed lines without dumsters. 
 
-The precipitations for 2016 and 2017 are stored in two different dataframe.The dataframe of 2016 contains `r nrow(precipitation_2016)` rows and `r ncol(precipitation_2016)` columns. The dataframe of 2016 contains `r nrow(precipitation_2017)` rows and `r ncol(precipitation_2017)` columns. They both containing the following variables: `r colnames(precipitation_2016)`. I omitted rows that do not have precipitation data. Two dataframes for precipitation are combined and a new precipitation_tidy dataframe is created. The total precipitation in 2017 is `r sum(filter(precipitation_tidy, year == 2017, !is.na(month))$total)`. The median number of sports balls in the dumster in 2016 is `r median(filter(trash_wheel_data, year == 2016)$sports_balls)`. 
+The precipitations for 2016 and 2017 are stored in two different dataframe.The dataframe of 2016 contains `r nrow(precipitation_2016)` observations and `r ncol(precipitation_2016)` columns. The dataframe of 2016 contains `r nrow(precipitation_2017)` observations and `r ncol(precipitation_2017)` columns. They both containing the following variables: `r colnames(precipitation_2016)`. I omitted rows that do not have precipitation data. Two dataframes for precipitation are combined and a new precipitation_tidy dataframe is created. The total precipitation in 2017 is `r sum(filter(precipitation_tidy, year == 2017, !is.na(month))$total)`. The median number of sports balls in the dumster in 2016 is `r median(filter(trash_wheel_data, year == 2016)$sports_balls)`. 
 
 
 ##Problem 3
@@ -107,7 +101,7 @@ brfss_smart2010 = janitor::clean_names(brfss_smart2010) %>%
   select(-c(topic, class, question, sample_size, confidence_limit_low:geo_location)) %>% 
   spread(key = response, value = data_value) %>% 
   janitor::clean_names() %>%  #Clean the names again 
-  mutate(proportion = (excellent + very_good) / (excellent + very_good + good + fair + poor)) #Calculate the proportions and add it as a variable. 
+  mutate(proportion = excellent + very_good) #Calculate the proportions and add it as a variable. 
 
 
 #Calculaye unique locations
@@ -120,11 +114,11 @@ tail(names(sort(table(brfss_smart2010$locationabbr))), 1) #NJ is the most freque
 ggplot(filter(brfss_smart2010, year == 2002), aes(x = excellent)) + geom_histogram()
 
 
-ggplot(filter(brfss_smart2010, locationdesc == "NY - New York County" | locationdesc == "NY - Queens County"), aes(x = year, y = excellent)) + geom_point(aes(color = locationdesc), alpha = .5)
+ggplot(filter(brfss_smart2010, locationdesc == "NY - New York County" | locationdesc == "NY - Queens County"), aes(x = year, y = excellent)) + geom_point(aes(color = locationdesc))
 ```
 
 There are a total of `r nrow(distinct_location)` locations are included in the dataset. And there are `r nrow(distinct_state)` states. Since there are a total of 51 states, including the district of columbia, in United States, all the states are represented in this dataset. The most frequently appeared state is NJ.  In 2002, the median of the "Excellent" response value are `r median(filter(brfss_smart2010, year == 2002)$excellent, na.rm = TRUE)`.
 
-The two plots, first one is a histogram and second one is a scatter plot. From the histogram, we can see that there are some extreme values for excellent. And most frequent excellent value is around 20 to 30. From the scatterplot, we can obviously see the difference btween the New York County and Queen County. The New York County has higher excellent value throughout the years.  
+The two plots, first one is a histogram and second one is a scatter plot. From the histogram, we can see that there are some extreme values for excellent percentage in 2002. And most frequent excellent value is around 20 to 30 percent. From the scatterplot, we can obviously see the difference btween the New York County and Queen County. The New York County has generally higher excellent percentage throughout the years compared with the Queens County.  
 
 
